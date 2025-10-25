@@ -8,28 +8,28 @@ Running the Backend (Spring Boot)
 Navigate to the backend directory:
 
 
-cd backend
+    cd backend
 Ensure PostgreSQL is running and the database 'recipe_platform' exists.
 
 Run the Spring Boot application:
 
 
-mvn spring-boot:run
+    mvn spring-boot:run
 The backend will start on http://localhost:8080
 
 Running the Frontend (React)
 Open a new terminal and navigate to the frontend directory:
 
 
-cd frontend/recipe-platform-frontend
+    cd frontend/recipe-platform-frontend
 Install dependencies (if not already done):
 
 
-npm install
+    npm install
 Start the React development server:
 
 
-npm start
+    npm start
 The frontend will start on http://localhost:3000
 
 Accessing the Application
