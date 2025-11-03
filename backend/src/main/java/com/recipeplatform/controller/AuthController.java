@@ -10,9 +10,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication; // <-- IMPORT THIS
 import org.springframework.security.core.context.SecurityContextHolder; // <-- IMPORT THIS
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.GrantedAuthority; // <-- IMPORT THIS
 import jakarta.validation.Valid;
 import java.util.Map;
-import org.springframework.web.bind.annotation.CrossOrigin;
+
 import com.recipeplatform.config.JwtUtil; // <-- IMPORT
 import org.springframework.security.core.userdetails.UserDetails; // <-- IMPORT
 import org.springframework.security.core.userdetails.UserDetailsService; // <-- IMPORT
@@ -56,13 +57,24 @@ public class AuthController {
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            // Load UserDetails to generate token
             final UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.username());
-
-            // Generate a REAL token
             final String token = jwtUtil.generateToken(userDetails);
 
-            return ResponseEntity.ok(Map.of("token", token)); // <-- Send real token
+            // --- UPDATE THE RESPONSE ---
+            // Get the user's role
+            String role = userDetails.getAuthorities().stream()
+                                .findFirst()
+                                .map(GrantedAuthority::getAuthority)
+                                .orElse("");
+
+            // Send back token, username, and role
+            return ResponseEntity.ok(Map.of(
+                "token", token,
+                "username", userDetails.getUsername(),
+                "role", role 
+            ));
+            // --- END OF UPDATE ---
+
         } catch (Exception e) {
             return ResponseEntity.status(401).body(Map.of("error", "Invalid username or password"));
         }

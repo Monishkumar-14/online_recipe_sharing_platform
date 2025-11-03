@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.web.bind.annotation.CrossOrigin;
+
+import com.recipeplatform.dto.RecipeDto; // <-- ADD THIS
 @RestController
 @RequestMapping("/api/recipes")
 @CrossOrigin(origins = "http://localhost:3000")
@@ -20,7 +21,7 @@ public class RecipeController {
     private RecipeService recipeService;
 
     @GetMapping
-    public ResponseEntity<List<Recipe>> getAllRecipes() {
+    public ResponseEntity<List<RecipeDto>> getAllRecipes() {
         return ResponseEntity.ok(recipeService.getAllRecipes());
     }
 

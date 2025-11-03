@@ -21,15 +21,18 @@ const RecipeCard = ({ recipe }) => {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
           <Chip label={recipe.category} color="primary" size="small" />
           <Typography variant="body2" color="text.secondary">
-            By: {recipe.user?.username || 'Unknown'}
+            By: {recipe.username || 'Unknown'}
           </Typography>
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Rating value={recipe.averageRating || 0} readOnly precision={0.5} size="small" />
-          <Typography variant="body2" sx={{ ml: 1 }}>
-            ({recipe.ratings?.length || 0})
-          </Typography>
-        </Box>
+              {/* Only render the rating Box if recipe.averageRating is a number */}
+              {typeof recipe.averageRating === 'number' && recipe.averageRating > 0 && (
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Rating value={recipe.averageRating} readOnly precision={0.5} size="small" />
+                  <Typography variant="body2" sx={{ ml: 1 }}>
+                    ({recipe.averageRating.toFixed(1)})
+                  </Typography>
+                </Box>
+              )}
       </CardContent>
       <Box sx={{ p: 2, pt: 0 }}>
         <Link to={`/recipe/${recipe.id}`} style={{ textDecoration: 'none' }}>
