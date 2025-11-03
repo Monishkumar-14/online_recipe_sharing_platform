@@ -20,6 +20,11 @@ public class RecipeController {
     @Autowired
     private RecipeService recipeService;
 
+    @GetMapping("/feed")
+    public ResponseEntity<List<RecipeDto>> getMyFeed(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(recipeService.getFeedForUser(user));
+    }
+    
     @GetMapping
     public ResponseEntity<List<RecipeDto>> getAllRecipes() {
         return ResponseEntity.ok(recipeService.getAllRecipes());

@@ -16,31 +16,30 @@ import org.springframework.http.HttpMethod;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // REMOVE THIS FIELD INJECTION
-    // @Autowired
-    // private JwtAuthFilter jwtAuthFilter; 
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
+            .csrf(csrf -> csrf.disable()) // Disable CSRF for stateless APIs
             .sessionManagement(session -> 
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Use stateless sessions
             )
             .authorizeHttpRequests(auth -> auth
                 // Allow anyone to register or log in
                 .requestMatchers("/api/auth/**").permitAll() 
                 
-                // Allow anyone to VIEW (GET) recipes
+                // Allow anyone to VIEW (GET) recipes and related content
                 .requestMatchers(HttpMethod.GET, "/api/recipes/**").permitAll()
                 
-                // --- ADD THIS RULE ---
                 // Only COOK or ADMIN can create (POST) recipes
                 .requestMatchers(HttpMethod.POST, "/api/recipes").hasAnyRole("COOK", "ADMIN")
+
+                // Only ADMIN can access the user management endpoints
+                .requestMatchers("/api/users/**").hasRole("ADMIN")
                 
-                // All other requests must be authenticated
+                // All other requests (like POST/PUT/DELETE) must be authenticated
                 .anyRequest().authenticated() 
             )
+            // Add our custom JWT filter before the standard authentication filter
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         
         return http.build();
@@ -48,8 +47,10 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        // Expose the AuthenticationManager as a Bean for our AuthController
         return authenticationConfiguration.getAuthenticationManager();
     }
     
-    // Your PasswordEncoder bean should be in your main App.java class
+    // Remember: Your PasswordEncoder bean is correctly placed in your main App.java class
 }
+

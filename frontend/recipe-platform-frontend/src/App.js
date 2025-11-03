@@ -10,6 +10,7 @@ import Profile from './pages/Profile';
 
 import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminUserRecipes from './pages/AdminUserRecipes';
 import './App.css';
 
 function App() {
@@ -35,6 +36,7 @@ function App() {
             </Route>
             <Route element={<ProtectedRoute allowedRoles={['ROLE_ADMIN']} />}>
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/user/:userId/recipes" element={<AdminUserRecipes />} />
             </Route>        
         </Routes>
         </main>

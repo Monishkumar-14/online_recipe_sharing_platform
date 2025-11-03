@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.Collection;
 import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty; // <-- IMPORT ADDED
 
 @Entity
 @Table(name = "users")
@@ -32,6 +33,7 @@ public class User implements UserDetails {
 
     @NotBlank
     @Size(max = 255)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) // <-- ANNOTATION ADDED
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -121,3 +123,4 @@ public class User implements UserDetails {
         return true; // You can add logic here (e.g., for email verification)
     }
 }
+

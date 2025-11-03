@@ -1,6 +1,21 @@
-import React, { useState ,useEffect} from 'react';
-import { Container, Paper, TextField, Button, Typography, Box, Alert, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { 
+  Container, 
+  Paper, 
+  TextField, 
+  Button, 
+  Typography, 
+  Box, 
+  Alert, 
+  FormControl, 
+  InputLabel, 
+  Select, 
+  MenuItem,
+  CircularProgress,
+  Avatar
+} from '@mui/material';
 import { useNavigate, useParams, Link } from 'react-router-dom';
+import { MenuBook as MenuBookIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import axios from 'axios';
 
 const CreateRecipe = () => {
@@ -11,25 +26,24 @@ const CreateRecipe = () => {
     instructions: '',
     category: 'VEGETARIAN',
     imageUrl: '',
-    videoUrl: ''
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { id } = useParams(); // <-- Get the ID from the URL
+  const { id } = useParams();
   const isEditMode = Boolean(id);
 
 
   useEffect(() => {
     if (isEditMode) {
+      setLoading(true);
       const fetchRecipe = async () => {
         try {
           const token = localStorage.getItem('token');
-          // Note: We need the token for GET /api/recipes/{id}
           const response = await axios.get(`http://localhost:8080/api/recipes/${id}`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
-          // Pre-fill the form
           setFormData({
             title: response.data.title,
             description: response.data.description,
@@ -37,10 +51,11 @@ const CreateRecipe = () => {
             instructions: response.data.instructions,
             category: response.data.category,
             imageUrl: response.data.imageUrl || '',
-            videoUrl: response.data.videoUrl || ''
           });
         } catch (err) {
           setError('Failed to load recipe data for editing.');
+        } finally {
+          setLoading(false);
         }
       };
       fetchRecipe();
@@ -61,22 +76,21 @@ const CreateRecipe = () => {
       const token = localStorage.getItem('token');
       let response;
 
+      const { videoUrl, ...dataToSend } = formData;
+
       if (isEditMode) {
-        // UPDATE existing recipe
-        response = await axios.put(`http://localhost:8080/api/recipes/${id}`, formData, {
+        response = await axios.put(`http://localhost:8080/api/recipes/${id}`, dataToSend, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         setSuccess('Recipe updated successfully!');
       } else {
-        // CREATE new recipe
-        response = await axios.post('http://localhost:8080/api/recipes', formData, {
+        response = await axios.post(`http://localhost:8080/api/recipes`, dataToSend, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         setSuccess('Recipe created successfully!');
       }
 
       setError('');
-      // Navigate to the recipe detail page after 2 seconds
       setTimeout(() => navigate(`/recipe/${response.data.id}`), 2000);
 
     } catch (error) {
@@ -86,107 +100,131 @@ const CreateRecipe = () => {
   };
 
   return (
-    <Container component="main" maxWidth="md">
-        <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
-        <Typography component="h1" variant="h4" align="center" gutterBottom>
-          {/* --- Change title based on mode --- */}
-          {isEditMode ? 'Edit Your Recipe' : 'Create New Recipe'}
-        </Typography>
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-        {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="title"
-            label="Recipe Title"
-            name="title"
-            autoFocus
-            value={formData.title}
-            onChange={handleChange}
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="description"
-            label="Description"
-            name="description"
-            multiline
-            rows={3}
-            value={formData.description}
-            onChange={handleChange}
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="ingredients"
-            label="Ingredients (one per line)"
-            name="ingredients"
-            multiline
-            rows={5}
-            value={formData.ingredients}
-            onChange={handleChange}
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="instructions"
-            label="Instructions"
-            name="instructions"
-            multiline
-            rows={8}
-            value={formData.instructions}
-            onChange={handleChange}
-          />
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="category-label">Category</InputLabel>
-            <Select
-              labelId="category-label"
-              id="category"
-              name="category"
-              value={formData.category}
-              label="Category"
-              onChange={handleChange}
-            >
-              <MenuItem value="VEGETARIAN">Vegetarian</MenuItem>
-              <MenuItem value="VEGAN">Vegan</MenuItem>
-              <MenuItem value="NON_VEGETARIAN">Non-Vegetarian</MenuItem>
-            </Select>
-          </FormControl>
-          <TextField
-            margin="normal"
-            fullWidth
-            id="imageUrl"
-            label="Image URL (optional)"
-            name="imageUrl"
-            value={formData.imageUrl}
-            onChange={handleChange}
-          />
-          <TextField
-            margin="normal"
-            fullWidth
-            id="videoUrl"
-            label="Video URL (optional)"
-            name="videoUrl"
-            value={formData.videoUrl}
-            onChange={handleChange}
-          />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
-          >
-            Create Recipe
-          </Button>
-        </Box>
-      </Paper>
-    </Container>
+    <Box sx={{ bgcolor: '#f5f5f5', minHeight: '100vh', py: 4 }}>
+      <Container component="main" maxWidth="md">
+        <Button
+          onClick={() => navigate(isEditMode ? `/recipe/${id}` : '/')}
+          startIcon={<ArrowBackIcon />}
+          sx={{ mb: 2, textTransform: 'none', fontWeight: 600 }}
+        >
+          {isEditMode ? 'Back to Recipe' : 'Back to Home'}
+        </Button>
+        <Paper elevation={3} sx={{ p: { xs: 2, sm: 4 }, borderRadius: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, gap: 1 }}>
+            <Avatar sx={{ bgcolor: 'primary.main' }}>
+              <MenuBookIcon />
+            </Avatar>
+            <Typography component="h1" variant="h4" fontWeight={700}>
+              {isEditMode ? 'Edit Your Recipe' : 'Create New Recipe'}
+            </Typography>
+          </Box>
+          
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', my: 5 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+              {/* --- ALL GRID COMPONENTS REMOVED --- */}
+              {/* Fields are now in a simple vertical stack */}
+              
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                id="title"
+                label="Recipe Title"
+                name="title"
+                autoFocus
+                value={formData.title}
+                onChange={handleChange}
+              />
+
+              <FormControl fullWidth margin="normal">
+                <InputLabel id="category-label">Category</InputLabel>
+                <Select
+                  labelId="category-label"
+                  id="category"
+                  name="category"
+                  value={formData.category}
+                  label="Category"
+                  onChange={handleChange}
+                >
+                  <MenuItem value="VEGETARIAN">Vegetarian</MenuItem>
+                  <MenuItem value="VEGAN">Vegan</MenuItem>
+                  <MenuItem value="NON_VEGETARIAN">Non-Vegetarian</MenuItem>
+                </Select>
+              </FormControl>
+              
+              <TextField
+                margin="normal"
+                fullWidth
+                id="imageUrl"
+                label="Image URL (optional)"
+                name="imageUrl"
+                value={formData.imageUrl}
+                onChange={handleChange}
+              />
+              
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                id="description"
+                label="Description"
+                name="description"
+                multiline
+                rows={3}
+                value={formData.description}
+                onChange={handleChange}
+              />
+              
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                id="ingredients"
+                label="Ingredients (one per line)"
+                name="ingredients"
+                multiline
+                rows={5}
+                value={formData.ingredients}
+                onChange={handleChange}
+                helperText="Please list each ingredient on a new line."
+              />
+              
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                id="instructions"
+                label="Instructions"
+                name="instructions"
+                multiline
+                rows={8}
+                value={formData.instructions}
+                onChange={handleChange}
+              />
+              
+              {/* --- Error and Success Alerts --- */}
+              {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+              {success && <Alert severity="success" sx={{ mt: 2 }}>{success}</Alert>}
+
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                sx={{ mt: 3, mb: 2, py: 1.5, fontWeight: 600, borderRadius: 1 }}
+              >
+                {isEditMode ? 'Update Recipe' : 'Submit Recipe'}
+              </Button>
+            </Box>
+          )}
+        </Paper>
+      </Container>
+    </Box>
   );
 };
 
 export default CreateRecipe;
+
