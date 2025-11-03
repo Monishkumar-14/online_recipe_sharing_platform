@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
-
+import org.springframework.http.HttpStatus; // <-- IMPORT
 import com.recipeplatform.dto.RecipeDto; // <-- ADD THIS
 @RestController
 @RequestMapping("/api/recipes")
@@ -44,41 +44,52 @@ public class RecipeController {
     @PostMapping
     public ResponseEntity<Recipe> createRecipe(@Valid @RequestBody Recipe recipe, @AuthenticationPrincipal User user) {
         recipe.setUser(user);
-        return ResponseEntity.ok(recipeService.createRecipe(recipe));
+        Recipe createdRecipe = recipeService.createRecipe(recipe);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdRecipe);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Recipe> updateRecipe(@PathVariable Long id, @Valid @RequestBody Recipe recipeDetails, @AuthenticationPrincipal User user) {
-        Optional<Recipe> recipeOpt = recipeService.getRecipeById(id);
-        if (recipeOpt.isPresent()) {
-            Recipe recipe = recipeOpt.get();
-            if (!recipe.getUser().getId().equals(user.getId())) {
-                return ResponseEntity.status(403).build();
-            }
-            recipe.setTitle(recipeDetails.getTitle());
-            recipe.setDescription(recipeDetails.getDescription());
-            recipe.setIngredients(recipeDetails.getIngredients());
-            recipe.setInstructions(recipeDetails.getInstructions());
-            recipe.setCategory(recipeDetails.getCategory());
-            recipe.setImageUrl(recipeDetails.getImageUrl());
-            recipe.setVideoUrl(recipeDetails.getVideoUrl());
-            return ResponseEntity.ok(recipeService.updateRecipe(recipe));
+    public ResponseEntity<Recipe> updateRecipe(@PathVariable Long id, 
+                                               @Valid @RequestBody Recipe recipeDetails, 
+                                               @AuthenticationPrincipal User user) {
+        
+        Recipe recipeToUpdate = recipeService.getRecipeById(id)
+                .orElseThrow(() -> new RuntimeException("Recipe not found"));
+
+        // Security Check: Allow if user is author OR user is ADMIN
+        if (!recipeToUpdate.getUser().getId().equals(user.getId()) &&
+            !user.getRole().equals(User.Role.ADMIN)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        return ResponseEntity.notFound().build();
+
+        // Update fields
+        recipeToUpdate.setTitle(recipeDetails.getTitle());
+        recipeToUpdate.setDescription(recipeDetails.getDescription());
+        recipeToUpdate.setIngredients(recipeDetails.getIngredients());
+        recipeToUpdate.setInstructions(recipeDetails.getInstructions());
+        recipeToUpdate.setCategory(recipeDetails.getCategory());
+        recipeToUpdate.setImageUrl(recipeDetails.getImageUrl());
+        recipeToUpdate.setVideoUrl(recipeDetails.getVideoUrl());
+        
+        Recipe updatedRecipe = recipeService.updateRecipe(recipeToUpdate);
+        return ResponseEntity.ok(updatedRecipe);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRecipe(@PathVariable Long id, @AuthenticationPrincipal User user) {
-        Optional<Recipe> recipeOpt = recipeService.getRecipeById(id);
-        if (recipeOpt.isPresent()) {
-            Recipe recipe = recipeOpt.get();
-            if (!recipe.getUser().getId().equals(user.getId()) && user.getRole() != User.Role.ADMIN) {
-                return ResponseEntity.status(403).build();
-            }
-            recipeService.deleteRecipe(id);
-            return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> deleteRecipe(@PathVariable Long id, 
+                                             @AuthenticationPrincipal User user) {
+        
+        Recipe recipeToDelete = recipeService.getRecipeById(id)
+                .orElseThrow(() -> new RuntimeException("Recipe not found"));
+
+        // Security Check: Allow if user is author OR user is ADMIN
+        if (!recipeToDelete.getUser().getId().equals(user.getId()) &&
+            !user.getRole().equals(User.Role.ADMIN)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        return ResponseEntity.notFound().build();
+        
+        recipeService.deleteRecipe(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/top-rated")

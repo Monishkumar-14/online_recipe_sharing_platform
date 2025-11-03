@@ -1,11 +1,10 @@
 package com.recipeplatform.model;
-import com.fasterxml.jackson.annotation.JsonIgnore; // <-- IMPORT
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
-import java.util.HashMap; // <-- IMPORT
+import java.util.HashMap;
 import java.util.Map;
 
 @Entity
@@ -16,8 +15,7 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
-    @Size(max = 1000)
+    @Column(nullable = false, length = 1000)
     private String content;
 
     private LocalDateTime createdAt;
@@ -32,17 +30,12 @@ public class Comment {
     @JsonIgnore
     private Recipe recipe;
 
-    // Constructors
-    public Comment() {}
-
-    public Comment(String content, User user, Recipe recipe) {
-        this.content = content;
-        this.user = user;
-        this.recipe = recipe;
+    // --- Constructors ---
+    public Comment() {
         this.createdAt = LocalDateTime.now();
     }
 
-    // Getters and Setters
+    // --- Getters and Setters ---
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -57,6 +50,8 @@ public class Comment {
 
     public Recipe getRecipe() { return recipe; }
     public void setRecipe(Recipe recipe) { this.recipe = recipe; }
+
+    // --- JSON Helpers for Frontend ---
     @JsonProperty("user")
     public Map<String, Object> getSimpleUser() {
         if (this.user != null) {
@@ -64,6 +59,17 @@ public class Comment {
             simpleUser.put("id", this.user.getId());
             simpleUser.put("username", this.user.getUsername());
             return simpleUser;
+        }
+        return null;
+    }
+
+    @JsonProperty("recipe")
+    public Map<String, Object> getSimpleRecipe() {
+        if (this.recipe != null) {
+            Map<String, Object> simpleRecipe = new HashMap<>();
+            simpleRecipe.put("id", this.recipe.getId());
+            simpleRecipe.put("title", this.recipe.getTitle());
+            return simpleRecipe;
         }
         return null;
     }

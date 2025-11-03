@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.GrantedAuthority; // <-- IMPORT THIS
 import jakarta.validation.Valid;
 import java.util.Map;
-
+import java.util.HashMap; // <-- Make sure this is imported
 import com.recipeplatform.config.JwtUtil; // <-- IMPORT
 import org.springframework.security.core.userdetails.UserDetails; // <-- IMPORT
 import org.springframework.security.core.userdetails.UserDetailsService; // <-- IMPORT
@@ -55,26 +55,26 @@ public class AuthController {
             Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password())
             );
+
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             final UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.username());
             final String token = jwtUtil.generateToken(userDetails);
 
-            // --- UPDATE THE RESPONSE ---
-            // Get the user's role
             String role = userDetails.getAuthorities().stream()
                                 .findFirst()
                                 .map(GrantedAuthority::getAuthority)
                                 .orElse("");
 
-            // Send back token, username, and role
-            return ResponseEntity.ok(Map.of(
-                "token", token,
-                "username", userDetails.getUsername(),
-                "role", role 
-            ));
-            // --- END OF UPDATE ---
+            // Use HashMap to allow mixed types (String and Long)
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("token", token);
+            responseBody.put("username", userDetails.getUsername());
+            responseBody.put("role", role);
+            responseBody.put("userId", ((User) userDetails).getId());
 
+            return ResponseEntity.ok(responseBody);
+            
         } catch (Exception e) {
             return ResponseEntity.status(401).body(Map.of("error", "Invalid username or password"));
         }

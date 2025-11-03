@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
-
+import org.springframework.data.repository.query.Param;
 @Repository
 public interface RecipeRepository extends JpaRepository<Recipe, Long> {
     List<Recipe> findByCategory(Category category);
@@ -28,4 +28,12 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
            "LEFT JOIN r.ratings rat " +
            "GROUP BY r.id, r.user.username")
     List<RecipeDto> findAllRecipeCardData();
+    @Query("SELECT new com.recipeplatform.dto.RecipeDto(r.id, r.title, r.description, r.imageUrl, r.category, r.user.username, AVG(rat.score)) " +
+           "FROM Recipe r " +
+           "JOIN r.user " +
+           "LEFT JOIN r.ratings rat " +
+           "WHERE r.user.id = :userId " +
+           "GROUP BY r.id, r.user.username " +
+           "ORDER BY r.createdAt DESC")
+    List<RecipeDto> findMyRecipes(@Param("userId") Long userId);
 }

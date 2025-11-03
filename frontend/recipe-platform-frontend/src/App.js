@@ -29,6 +29,10 @@ function App() {
             <Route element={<ProtectedRoute />}>
                 <Route path="/profile" element={<Profile />} />
             </Route>  
+            <Route element={<ProtectedRoute allowedRoles={['ROLE_COOK', 'ROLE_ADMIN']} />}>
+            <Route path="/create-recipe" element={<CreateRecipe />} />
+              <Route path="/edit-recipe/:id" element={<CreateRecipe />} />
+            </Route>
             <Route element={<ProtectedRoute allowedRoles={['ROLE_ADMIN']} />}>
               <Route path="/admin" element={<AdminDashboard />} />
             </Route>        

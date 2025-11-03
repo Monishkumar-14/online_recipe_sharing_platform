@@ -57,6 +57,16 @@ public class Rating {
 
     public Recipe getRecipe() { return recipe; }
     public void setRecipe(Recipe recipe) { this.recipe = recipe; }
+    @JsonProperty("recipe")
+    public Map<String, Object> getSimpleRecipe() {
+        if (this.recipe != null) {
+            Map<String, Object> simpleRecipe = new HashMap<>();
+            simpleRecipe.put("id", this.recipe.getId());
+            simpleRecipe.put("title", this.recipe.getTitle());
+            return simpleRecipe;
+        }
+        return null;
+    }
     @JsonProperty("user")
     public Map<String, Object> getSimpleUser() {
         if (this.user != null) {

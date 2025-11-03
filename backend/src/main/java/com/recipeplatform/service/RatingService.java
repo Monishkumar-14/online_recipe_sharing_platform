@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.List;
 
 @Service
 public class RatingService {
@@ -49,5 +50,9 @@ public class RatingService {
             avg = 0.0;
         }
         return Map.of("averageRating", avg);
+    }
+
+    public List<Rating> getRatingsByUser(User user) {
+        return ratingRepository.findByUserIdWithRecipe(user.getId());
     }
 }
