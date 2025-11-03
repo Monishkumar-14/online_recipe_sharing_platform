@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState ,useEffect} from 'react';
 import { Container, Paper, TextField, Button, Typography, Box, Alert, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 
 const CreateRecipe = () => {
@@ -16,6 +16,37 @@ const CreateRecipe = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
+  const { id } = useParams(); // <-- Get the ID from the URL
+  const isEditMode = Boolean(id);
+
+
+  useEffect(() => {
+    if (isEditMode) {
+      const fetchRecipe = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          // Note: We need the token for GET /api/recipes/{id}
+          const response = await axios.get(`http://localhost:8080/api/recipes/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          // Pre-fill the form
+          setFormData({
+            title: response.data.title,
+            description: response.data.description,
+            ingredients: response.data.ingredients,
+            instructions: response.data.instructions,
+            category: response.data.category,
+            imageUrl: response.data.imageUrl || '',
+            videoUrl: response.data.videoUrl || ''
+          });
+        } catch (err) {
+          setError('Failed to load recipe data for editing.');
+        }
+      };
+      fetchRecipe();
+    }
+  }, [id, isEditMode]);
+
 
   const handleChange = (e) => {
     setFormData({
@@ -28,25 +59,38 @@ const CreateRecipe = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:8080/api/recipes', formData, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      setSuccess('Recipe created successfully!');
+      let response;
+
+      if (isEditMode) {
+        // UPDATE existing recipe
+        response = await axios.put(`http://localhost:8080/api/recipes/${id}`, formData, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        setSuccess('Recipe updated successfully!');
+      } else {
+        // CREATE new recipe
+        response = await axios.post('http://localhost:8080/api/recipes', formData, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        setSuccess('Recipe created successfully!');
+      }
+
       setError('');
+      // Navigate to the recipe detail page after 2 seconds
       setTimeout(() => navigate(`/recipe/${response.data.id}`), 2000);
+
     } catch (error) {
-      setError('Failed to create recipe. Please try again.');
+      setError(error.response?.data?.error || 'Failed to submit recipe. Please try again.');
       setSuccess('');
     }
   };
 
   return (
     <Container component="main" maxWidth="md">
-      <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
+        <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
         <Typography component="h1" variant="h4" align="center" gutterBottom>
-          Create New Recipe
+          {/* --- Change title based on mode --- */}
+          {isEditMode ? 'Edit Your Recipe' : 'Create New Recipe'}
         </Typography>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
         {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}

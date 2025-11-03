@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import com.recipeplatform.dto.RecipeDto;
-
+import com.recipeplatform.model.User;
 @Service
 public class RecipeService {
 
@@ -50,5 +50,9 @@ public class RecipeService {
 
     public List<Recipe> getTopRatedRecipes() {
         return recipeRepository.findAllOrderByAverageRatingDesc();
+    }
+
+    public List<RecipeDto> getMyRecipes(User user) {
+        return recipeRepository.findMyRecipes(user.getId());
     }
 }
