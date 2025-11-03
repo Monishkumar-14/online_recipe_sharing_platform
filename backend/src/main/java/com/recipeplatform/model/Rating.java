@@ -6,6 +6,11 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.HashMap; // <-- IMPORT
+import java.util.Map;
 @Entity
 @Table(name = "ratings")
 public class Rating {
@@ -23,21 +28,19 @@ public class Rating {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recipe_id", nullable = false)
+    @JsonIgnore
     private Recipe recipe;
 
     // Constructors
-    public Rating() {}
-
-    public Rating(Integer score, User user, Recipe recipe) {
-        this.score = score;
-        this.user = user;
-        this.recipe = recipe;
+    public Rating() {
         this.createdAt = LocalDateTime.now();
     }
+
 
     // Getters and Setters
     public Long getId() { return id; }
@@ -54,4 +57,14 @@ public class Rating {
 
     public Recipe getRecipe() { return recipe; }
     public void setRecipe(Recipe recipe) { this.recipe = recipe; }
+    @JsonProperty("user")
+    public Map<String, Object> getSimpleUser() {
+        if (this.user != null) {
+            Map<String, Object> simpleUser = new HashMap<>();
+            simpleUser.put("id", this.user.getId());
+            simpleUser.put("username", this.user.getUsername());
+            return simpleUser;
+        }
+        return null;
+    }
 }

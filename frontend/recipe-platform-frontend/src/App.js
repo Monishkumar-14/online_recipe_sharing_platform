@@ -7,6 +7,9 @@ import Register from './pages/Register';
 import CreateRecipe from './pages/CreateRecipe';
 import RecipeDetail from './pages/RecipeDetail';
 import Profile from './pages/Profile';
+
+import AdminDashboard from './pages/AdminDashboard';
+import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
 function App() {
@@ -19,10 +22,17 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/create-recipe" element={<CreateRecipe />} />
+            <Route element={<ProtectedRoute allowedRoles={['ROLE_COOK', 'ROLE_ADMIN']} />}>
+              <Route path="/create-recipe" element={<CreateRecipe />} />
+            </Route>
             <Route path="/recipe/:id" element={<RecipeDetail />} />
-            <Route path="/profile" element={<Profile />} />
-          </Routes>
+            <Route element={<ProtectedRoute />}>
+                <Route path="/profile" element={<Profile />} />
+            </Route>  
+            <Route element={<ProtectedRoute allowedRoles={['ROLE_ADMIN']} />}>
+              <Route path="/admin" element={<AdminDashboard />} />
+            </Route>        
+        </Routes>
         </main>
       </div>
     </Router>

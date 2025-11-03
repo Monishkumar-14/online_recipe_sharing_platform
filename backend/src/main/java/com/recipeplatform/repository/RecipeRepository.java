@@ -2,6 +2,7 @@ package com.recipeplatform.repository;
 
 import com.recipeplatform.model.Recipe;
 import com.recipeplatform.model.Recipe.Category;
+import com.recipeplatform.dto.RecipeDto; // <-- IMPORT THE DTO
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,4 +20,12 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
 
     @Query("SELECT r FROM Recipe r LEFT JOIN r.ratings rat GROUP BY r ORDER BY AVG(rat.score) DESC")
     List<Recipe> findAllOrderByAverageRatingDesc();
+
+    // REPLACE findAllWithUser() WITH THIS:
+    @Query("SELECT new com.recipeplatform.dto.RecipeDto(r.id, r.title, r.description, r.imageUrl, r.category, r.user.username, AVG(rat.score)) " +
+           "FROM Recipe r " +
+           "JOIN r.user " +
+           "LEFT JOIN r.ratings rat " +
+           "GROUP BY r.id, r.user.username")
+    List<RecipeDto> findAllRecipeCardData();
 }

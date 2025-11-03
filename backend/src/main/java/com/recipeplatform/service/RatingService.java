@@ -1,12 +1,15 @@
 package com.recipeplatform.service;
 
 import com.recipeplatform.model.Rating;
+import com.recipeplatform.model.RatingRequest;
 import com.recipeplatform.model.Recipe;
 import com.recipeplatform.model.User;
 import com.recipeplatform.repository.RatingRepository;
+import com.recipeplatform.repository.RecipeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.List;
+
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -15,26 +18,36 @@ public class RatingService {
     @Autowired
     private RatingRepository ratingRepository;
 
-    public Rating addOrUpdateRating(User user, Recipe recipe, Integer score) {
-        Optional<Rating> existingRating = ratingRepository.findByUserIdAndRecipeId(user.getId(), recipe.getId());
+    @Autowired
+    private RecipeRepository recipeRepository;
+
+    public Rating submitRating(Long recipeId, User user, RatingRequest ratingRequest) {
+        // Find if the user already rated this recipe
+        Optional<Rating> existingRating = ratingRepository.findByRecipeIdAndUserId(recipeId, user.getId());
+        
+        Rating rating;
         if (existingRating.isPresent()) {
-            existingRating.get().setScore(score);
-            return ratingRepository.save(existingRating.get());
+            // Update existing rating
+            rating = existingRating.get();
         } else {
-            Rating rating = new Rating(score, user, recipe);
-            return ratingRepository.save(rating);
+            // Create a new rating
+            rating = new Rating();
+            Recipe recipe = recipeRepository.findById(recipeId)
+                    .orElseThrow(() -> new RuntimeException("Recipe not found"));
+            rating.setRecipe(recipe);
+            rating.setUser(user);
         }
+        
+        rating.setScore(ratingRequest.score());
+        return ratingRepository.save(rating);
     }
 
-    public List<Rating> getRatingsByRecipe(Recipe recipe) {
-        return ratingRepository.findByRecipeId(recipe.getId());
-    }
-
-    public Double getAverageRating(Recipe recipe) {
-        return ratingRepository.findAverageRatingByRecipeId(recipe.getId());
-    }
-
-    public Optional<Rating> getUserRatingForRecipe(User user, Recipe recipe) {
-        return ratingRepository.findByUserIdAndRecipeId(user.getId(), recipe.getId());
+    public Map<String, Double> getAverageRating(Long recipeId) {
+        Double avg = ratingRepository.getAverageRatingByRecipeId(recipeId);
+        // Handle cases where there are no ratings yet
+        if (avg == null) {
+            avg = 0.0;
+        }
+        return Map.of("averageRating", avg);
     }
 }

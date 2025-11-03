@@ -10,9 +10,9 @@ import java.util.Optional;
 
 @Repository
 public interface RatingRepository extends JpaRepository<Rating, Long> {
-    Optional<Rating> findByUserIdAndRecipeId(Long userId, Long recipeId);
-    List<Rating> findByRecipeId(Long recipeId);
-
     @Query("SELECT AVG(r.score) FROM Rating r WHERE r.recipe.id = :recipeId")
-    Double findAverageRatingByRecipeId(@Param("recipeId") Long recipeId);
+    Double getAverageRatingByRecipeId(Long recipeId);
+
+    // Finds if a user has already rated this recipe
+    Optional<Rating> findByRecipeIdAndUserId(Long recipeId, Long userId);
 }

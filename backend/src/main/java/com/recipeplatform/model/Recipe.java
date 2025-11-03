@@ -50,9 +50,11 @@ public class Recipe {
     private User user;
 
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore // <-- ADD THIS
     private Set<Rating> ratings;
 
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore // <-- ADD THIS
     private Set<Comment> comments;
 
     public enum Category {

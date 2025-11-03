@@ -24,6 +24,8 @@ const Login = () => {
       // For now, we'll use a simple login. In a real app, you'd implement JWT authentication
       const response = await axios.post('http://localhost:8080/api/auth/login', formData);
       localStorage.setItem('token', response.data.token);
+      localStorage.setItem('username', response.data.username);
+      localStorage.setItem('role', response.data.role);
       navigate('/');
     } catch (error) {
       setError('Invalid username or password');

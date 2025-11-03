@@ -31,10 +31,14 @@ public class SecurityConfig {
                 // Allow anyone to register or log in
                 .requestMatchers("/api/auth/**").permitAll() 
                 
-                // ADD THIS LINE: Allow anyone to VIEW (GET) recipes
+                // Allow anyone to VIEW (GET) recipes
                 .requestMatchers(HttpMethod.GET, "/api/recipes/**").permitAll()
                 
-                // All other requests (like POST, PUT, DELETE) must be authenticated
+                // --- ADD THIS RULE ---
+                // Only COOK or ADMIN can create (POST) recipes
+                .requestMatchers(HttpMethod.POST, "/api/recipes").hasAnyRole("COOK", "ADMIN")
+                
+                // All other requests must be authenticated
                 .anyRequest().authenticated() 
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
