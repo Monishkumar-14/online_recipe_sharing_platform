@@ -25,9 +25,16 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
     @Query("SELECT r FROM Recipe r WHERE LOWER(r.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(r.description) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<Recipe> searchByKeyword(@Param("keyword") String keyword);
 
-    // Gets top-rated recipes (for a potential future feature)
-    @Query("SELECT r FROM Recipe r LEFT JOIN r.ratings rat GROUP BY r ORDER BY AVG(rat.score) DESC")
-    List<Recipe> getTopRatedRecipes();
+    // --- THIS QUERY IS UPDATED ---
+    // Gets top-rated recipes as DTOs (for "Reels" feed)
+    // It now returns List<RecipeDto> to include user/rating data safely
+    @Query("SELECT new com.recipeplatform.dto.RecipeDto(r.id, r.title, r.description, r.imageUrl, r.category, r.user.username, AVG(rat.score)) " +
+           "FROM Recipe r " +
+           "JOIN r.user " +
+           "LEFT JOIN r.ratings rat ON rat.recipe.id = r.id " +
+           "GROUP BY r.id, r.user.username " +
+           "ORDER BY AVG(rat.score) DESC NULLS LAST") // Order by rating, put unrated last
+    List<RecipeDto> findTopRatedRecipeCards(); // Renamed from getTopRatedRecipes
 
     // Gets all recipes with average ratings (for Home.js "Discover" feed)
     @Query("SELECT new com.recipeplatform.dto.RecipeDto(r.id, r.title, r.description, r.imageUrl, r.category, r.user.username, AVG(rat.score)) " +

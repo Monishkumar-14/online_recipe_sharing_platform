@@ -13,8 +13,8 @@ import {
   ListItemIcon,
   ListItemText,
   Avatar,
-  useMediaQuery,
-  alpha
+  useMediaQuery
+  // alpha was unused, so I removed it
 } from '@mui/material';
 import { 
   AccountCircle, 
@@ -24,7 +24,8 @@ import {
   Login,
   AppRegistration,
   Restaurant,
-  Menu as MenuIcon
+  Menu as MenuIcon,
+  Slideshow as ReelsIcon // <-- IMPORTED THE ICON HERE
 } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
@@ -138,7 +139,31 @@ const Navbar = () => {
             >
               Home
             </Button>
-
+            <Button 
+              color="inherit" 
+              component={Link} 
+              to="/reels"
+              startIcon={<ReelsIcon />} // <-- This will now work
+              sx={{
+                fontWeight: 600,
+                textTransform: 'none',
+                fontSize: '1rem',
+                position: 'relative',
+                '&:after': {
+                  content: '""',
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  width: 0,
+                  height: 2,
+                  bgcolor: '#1976d2',
+                  transition: 'width 0.3s ease',
+                },
+                '&:hover:after': { width: '100%' },
+              }}
+             >
+              Reels
+            </Button>
             {isCookOrAdmin && (
               <Button
                 color="inherit"
@@ -242,6 +267,20 @@ const Navbar = () => {
             }}
           >
             Home
+          </Button>
+          {/* Mobile Reels Button */}
+          <Button
+            component={Link}
+            to="/reels"
+            onClick={() => setMobileMenuOpen(false)}
+            sx={{
+              justifyContent: 'flex-start',
+              color: '#1976d2',
+              fontWeight: 600,
+              textTransform: 'none',
+            }}
+          >
+            Reels
           </Button>
           {isCookOrAdmin && (
             <Button

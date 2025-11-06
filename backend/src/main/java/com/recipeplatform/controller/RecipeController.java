@@ -98,7 +98,7 @@ public class RecipeController {
     }
 
     @GetMapping("/top-rated")
-    public ResponseEntity<List<Recipe>> getTopRatedRecipes() {
+    public ResponseEntity<List<RecipeDto>> getTopRatedRecipes() {
         return ResponseEntity.ok(recipeService.getTopRatedRecipes());
     }
 }

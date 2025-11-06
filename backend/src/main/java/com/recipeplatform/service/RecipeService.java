@@ -74,8 +74,8 @@ public class RecipeService {
         recipeRepository.deleteById(id);
     }
 
-    public List<Recipe> getTopRatedRecipes() {
-        return recipeRepository.getTopRatedRecipes();
+    public List<RecipeDto> getTopRatedRecipes() {
+        return recipeRepository.findTopRatedRecipeCards();
     }
 
     /**

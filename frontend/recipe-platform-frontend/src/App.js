@@ -11,6 +11,7 @@ import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminUserRecipes from './pages/AdminUserRecipes';
+import ReelsFeed from './pages/ReelsFeed';
 import './App.css';
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/reels" element={<ReelsFeed />} />
             <Route element={<ProtectedRoute allowedRoles={['ROLE_COOK', 'ROLE_ADMIN']} />}>
               <Route path="/create-recipe" element={<CreateRecipe />} />
             </Route>
